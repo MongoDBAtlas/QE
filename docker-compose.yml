@@ -1,0 +1,25 @@
+version: "3.5"
+
+services:
+  client:
+    image: ${HOST_ARCH}/node:19.0
+    container_name: client
+    hostname: client.demo
+    volumes:
+      - ./init.sh:/root/init.sh
+      - ./demo:/root/demo
+    working_dir: /root/demo
+    networks:
+      csfle:
+        ipv4_address: 192.168.10.10
+    environment:
+      - TZ=${TIMEZONE}
+    privileged: true
+    entrypoint: bash -c "/root/init.sh && sleep infinity"
+
+networks:
+  csfle:
+    ipam:
+      driver: default
+      config:
+        - subnet: 192.168.10.0/24
