@@ -12,7 +12,9 @@ function init(){
   echo "alias a='ls -a'" >> /root/.bashrc
   echo "alias la='ls -la'" >> /root/.bashrc
 
-  [ ! -f "/root/master-key.txt" ] && openssl rand 96 > /root/master-key.txt
+  if [ ! -f "${CMK}" ]; then
+    openssl rand 96 > ${CMK}
+  fi
 }
 
 init

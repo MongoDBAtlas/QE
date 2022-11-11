@@ -8,25 +8,29 @@ services:
     volumes:
       - ./init.sh:/root/init.sh
       - ./demo:/root/demo
+      - ./containerData/client:/root/cmk
     working_dir: /root/demo
     networks:
       qedemo:
         ipv4_address: 192.168.10.10
     environment:
       - TZ=${TIMEZONE}
+      - CMK=/root/cmk/master-key.txt
     privileged: true
     entrypoint: bash -c "/root/init.sh && sleep infinity"
 
-  enterprise:
+  local:
+    depends_on:
+      - client
     build:
-      context: enterprise
+      context: containerImages/enterprise
       args:
         HOST_ARCH: ${HOST_ARCH}
     image: ${HOST_ARCH}/ubuntu.mongodb602:enterprise
-    container_name: ent
-    hostname: ent.demo
+    container_name: enterprise
+    hostname: enterprise.demo
     volumes:
-      - ./dbPath/ent:/root/dbPath
+      - ./containerData/enterprise:/root/dbPath
     working_dir: /root
     networks:
       qedemo:
@@ -34,6 +38,7 @@ services:
     environment:
       - TZ=${TIMEZONE}
       - DEBIAN_FRONTEND=noninteractive apt-get install keyboard-configuration
+      - DB_PATH=/root/dbPath
     privileged: true
     entrypoint: bash -c "\
       echo -e "never" > /sys/kernel/mm/transparent_hugepage/enabled && \
