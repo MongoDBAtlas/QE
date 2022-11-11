@@ -6,18 +6,19 @@ services:
     container_name: client
     hostname: client.demo
     volumes:
-      - ./init.sh:/root/init.sh
-      - ./demo:/root/demo
-      - ./containerData/client:/root/cmk
-    working_dir: /root/demo
+      - ./init.sh:/home/node/init.sh
+      - ./demo:/home/node/demo
+      - client:/home/node/cmk
+    working_dir: /home/node/demo
     networks:
       qedemo:
         ipv4_address: 192.168.10.10
     environment:
       - TZ=${TIMEZONE}
-      - CMK=/root/cmk/master-key.txt
+      - HOME=/home/node
+      - CMK=/home/node/cmk/master-key.txt
     privileged: true
-    entrypoint: bash -c "/root/init.sh && sleep infinity"
+    entrypoint: bash -c "/home/node/init.sh && sleep infinity"
 
   atlas:
     depends_on:
@@ -26,19 +27,19 @@ services:
       context: containerImages/community
       args:
         HOST_ARCH: ${HOST_ARCH}
+        DB_PATH: /home/root/dbPath
     image: ${HOST_ARCH}/ubuntu.mongodb602:community
     container_name: community
     hostname: community.demo
     volumes:
-      - ./containerData/community:/root/dbPath
-    working_dir: /root
+      - community:/home/root/dbPath
+    working_dir: /home/root
     networks:
       qedemo:
         ipv4_address: 192.168.10.20
     environment:
       - TZ=${TIMEZONE}
       - DEBIAN_FRONTEND=noninteractive apt-get install keyboard-configuration
-      - DB_PATH=/root/dbPath
     privileged: true
     entrypoint: bash -c "\
       echo -e "never" > /sys/kernel/mm/transparent_hugepage/enabled && \
@@ -53,19 +54,19 @@ services:
       context: containerImages/enterprise
       args:
         HOST_ARCH: ${HOST_ARCH}
+        DB_PATH: /home/root/dbPath
     image: ${HOST_ARCH}/ubuntu.mongodb602:enterprise
     container_name: enterprise
     hostname: enterprise.demo
     volumes:
-      - ./containerData/enterprise:/root/dbPath
-    working_dir: /root
+      - enterprise:/home/root/dbPath
+    working_dir: /home/root
     networks:
       qedemo:
         ipv4_address: 192.168.10.30
     environment:
       - TZ=${TIMEZONE}
       - DEBIAN_FRONTEND=noninteractive apt-get install keyboard-configuration
-      - DB_PATH=/root/dbPath
     privileged: true
     entrypoint: bash -c "\
       echo -e "never" > /sys/kernel/mm/transparent_hugepage/enabled && \
@@ -79,3 +80,8 @@ networks:
       driver: default
       config:
         - subnet: 192.168.10.0/24
+
+volumes:
+  client:
+  community:
+  enterprise:

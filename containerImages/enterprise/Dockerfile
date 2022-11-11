@@ -1,9 +1,10 @@
-ARG HOST_ARCH DB_PATH
+ARG HOST_ARCH
 FROM ${HOST_ARCH}/ubuntu:bionic
 
-COPY mongodb.conf /root/
+COPY mongodb.conf /home/root/
 
-RUN sed -i "s/{DB_PATH}/$DB_PATH/g" /root/mongodb.conf && \
+ARG DB_PATH
+RUN sed -i "s _DB_PATH_ ${DB_PATH} g" /home/root/mongodb.conf && \
     apt update -y && apt install -y wget gnupg && \
     apt install --reinstall tzdata && \
     wget -qO - https://www.mongodb.org/static/pgp/server-6.0.asc | apt-key add - && \
