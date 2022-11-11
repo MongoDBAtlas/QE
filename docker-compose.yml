@@ -19,9 +19,36 @@ services:
     privileged: true
     entrypoint: bash -c "/root/init.sh && sleep infinity"
 
-  local:
+  atlas:
     depends_on:
       - client
+    build:
+      context: containerImages/community
+      args:
+        HOST_ARCH: ${HOST_ARCH}
+    image: ${HOST_ARCH}/ubuntu.mongodb602:community
+    container_name: community
+    hostname: community.demo
+    volumes:
+      - ./containerData/community:/root/dbPath
+    working_dir: /root
+    networks:
+      qedemo:
+        ipv4_address: 192.168.10.20
+    environment:
+      - TZ=${TIMEZONE}
+      - DEBIAN_FRONTEND=noninteractive apt-get install keyboard-configuration
+      - DB_PATH=/root/dbPath
+    privileged: true
+    entrypoint: bash -c "\
+      echo -e "never" > /sys/kernel/mm/transparent_hugepage/enabled && \
+      echo -e "never" > /sys/kernel/mm/transparent_hugepage/defrag && \
+      ulimit -n 64000 && \
+      mongod -f mongodb.conf && sleep infinity"
+
+  local:
+    depends_on:
+      - atlas
     build:
       context: containerImages/enterprise
       args:
