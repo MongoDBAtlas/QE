@@ -17,6 +17,8 @@ services:
       - TZ=${TIMEZONE}
       - HOME=/home/node
       - CMK=/home/node/cmk/master-key.txt
+      - USE_ATLAS=${USE_ATLAS}
+      - ATLAS_CONN_URI=${ATLAS_CONN_URI}
     privileged: true
     entrypoint: bash -c "/home/node/init.sh && sleep infinity"
 
