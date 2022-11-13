@@ -56,7 +56,7 @@ async function initKeyVault() {
     console.log(`  _id: ${dek._id}, keyAltNames: ${dek.keyAltNames}`);
   }
 
-  return deks;
+  return [mcli, deks];
 }
 
-export const deks = await initKeyVault();
+export const KeyVault = await initKeyVault();

@@ -1,18 +1,20 @@
 import { MongoClient } from "mongodb";
 import { atlasConnUri, useAtlas } from "./env.js";
-import { deks, KeyVaultNameSpace } from "./keyVault.js";
+import { KeyVault, KeyVaultNameSpace } from "./keyVault.js";
 import { kmsProviders } from "./kmsProvider.js";
 
 export const EncDB = "medicalRecords";
 export const EncColl = "patients";
 const secretColNameSpace = `${EncDB}.${EncColl}`;
-const { dek1, dek2, dek3, dek4 } = deks;
+const [kvClient, { dek1, dek2, dek3, dek4 }] = KeyVault;
+
+/* MongoClient for Auto Encryption */
 const encryptedFieldsMap = {
   [secretColNameSpace]: {
     fields: [
       {
         keyId: dek1._id,
-        path: "patiendId",
+        path: "patientId",
         bsonType: "int",
         queries: { queryType: "equality" },
       },
@@ -23,7 +25,7 @@ const encryptedFieldsMap = {
       },
       {
         keyId: dek3._id,
-        path: "patiendRecord.ssn",
+        path: "patientRecord.ssn",
         bsonType: "string",
         queries: { queryType: "equality" },
       },
@@ -42,7 +44,7 @@ const extraOptions = {
 
 function encClientConnUri() {
   let connuri = "mongodb://enterprise.demo";
-  if (useAtlas) {
+  if (useAtlas === true) {
     if ("" === atlasConnUri) {
       console.log("!! ATLAS_CONN_URI is missing");
       console.log("!! Either set ATLAS_CONN_URI or set USE_ATLAS to false");
@@ -56,6 +58,7 @@ function encClientConnUri() {
 async function encClientAuto() {
   const encClient = new MongoClient(encClientConnUri(), {
     autoEncryption: {
+      keyVaultClient: kvClient,
       keyVaultNamespace: KeyVaultNameSpace,
       kmsProviders: kmsProviders,
       extraOptions: extraOptions,
@@ -67,3 +70,13 @@ async function encClientAuto() {
   return encClient;
 }
 export const encryptClientAuto = await encClientAuto();
+export const encryptCollAuto = encryptClientAuto.db(EncDB).collection(EncColl);
+
+/* MongoClient for plain quereis */
+async function newPlainClient() {
+  const plainClient = new MongoClient(encClientConnUri());
+  await plainClient.connect();
+  return plainClient;
+}
+export const plainClient = await newPlainClient();
+export const plainColl = plainClient.db(EncDB).collection(EncColl);
