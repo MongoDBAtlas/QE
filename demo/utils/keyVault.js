@@ -8,11 +8,16 @@ const colName = "keyVault";
 export const KeyVaultNameSpace = `${dbName}.${colName}`;
 
 async function initKeyVault() {
-  const uri = "mongodb://community:27017,community:27018,community:27019/rsfle";
+  const uri = "mongodb://community:27017,community:27018,community:27019";
 
   const mcli = new MongoClient(uri);
   await mcli.connect();
   const db = mcli.db(dbName);
+
+  const clientEnc = new ClientEncryption(mcli, {
+    keyVaultNamespace: KeyVaultNameSpace,
+    kmsProviders: kmsProviders,
+  });
 
   let keyVault = await utils.lookupCollection(db, colName);
   if (undefined === keyVault) {
@@ -26,10 +31,6 @@ async function initKeyVault() {
       },
     );
 
-    const clientEnc = new ClientEncryption(mcli, {
-      keyVaultNamespace: KeyVaultNameSpace,
-      kmsProviders: kmsProviders,
-    });
     await clientEnc.createDataKey("local", {
       keyAltNames: ["dataKey1"],
     });
@@ -51,11 +52,12 @@ async function initKeyVault() {
   const dek4 = await keyVault.findOne({ keyAltNames: "dataKey4" });
 
   const deks = { dek1: dek1, dek2: dek2, dek3: dek3, dek4: dek4 };
-  for (const dek of Object.values(deks)) {
-    console.log(`  _id: ${dek._id}, keyAltNames: ${dek.keyAltNames}`);
-  }
+  // for (const dek of Object.values(deks)) {
+  //   console.log(`  _id: ${dek._id}, keyAltNames: ${dek.keyAltNames}`);
+  // }
 
-  return [mcli, deks];
+  return [mcli, deks, clientEnc];
 }
 
-export const KeyVault = await initKeyVault();
+const [kvClient, deks, encrypt] = await initKeyVault();
+export { kvClient, deks, encrypt };
