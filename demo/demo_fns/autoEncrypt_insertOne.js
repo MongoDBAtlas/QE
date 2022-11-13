@@ -1,7 +1,13 @@
-import { ExplainVerbosity } from "mongodb";
-import { encryptCollAuto, plainColl } from "../utils/mongoClient.js";
+import * as mcli from "../utils/mongoClient.js";
 
-const res = await encryptCollAuto.insertOne({
+const [encClient, plainClient] = await mcli.initMdbClients(
+  mcli.DB_AUTO_ENCRYPT,
+  true,
+);
+let coll, res;
+
+coll = encClient.db(mcli.EncDB).collection(mcli.EncColl);
+res = await coll.insertOne({
   firstName: "Jon",
   lastName: "Doe",
   patientId: 12345678,
@@ -19,7 +25,9 @@ const res = await encryptCollAuto.insertOne({
 console.log(">>\ninsertOne");
 console.log("  res:", res);
 
+coll = plainClient.db(mcli.EncDB).collection(mcli.EncColl);
+res = await coll.findOne({ _id: res.insertedId });
 console.log(">>> plain READ from DB");
-console.log(await plainColl.findOne({ _id: res.insertedId }));
+console.log(res);
 
 process.exit(0);

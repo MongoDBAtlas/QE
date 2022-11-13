@@ -5,6 +5,9 @@ import { kmsProviders } from "./kmsProvider.js";
 
 export const EncDB = "medicalRecords";
 export const EncColl = "patients";
+export const DB_AUTO_ENCRYPT = 1;
+export const DB_EXPLICIT_ENCRYPT = 2;
+
 const secretColNameSpace = `${EncDB}.${EncColl}`;
 const [kvClient, { dek1, dek2, dek3, dek4 }] = KeyVault;
 
@@ -42,42 +45,51 @@ const extraOptions = {
   cryptSharedLibPath: "/home/node/demo/crypt_shared/lib/mongo_crypt_v1.so",
 };
 
-function encClientConnUri() {
-  let connuri =
+function encClientConnUri(targetDB) {
+  const DB_AUTO_URI =
     "mongodb://enterprise:27017,enterprise:27018,enterprise:27019/rsfle";
+  const DB_EXPLICIT_URI =
+    "mongodb://community:27017,community:27018,community:27019/rsfle";
+
+  if (!(targetDB === DB_AUTO_ENCRYPT || targetDB === DB_EXPLICIT_ENCRYPT)) {
+    const error = `!! invalid arg: ${targetDB}`;
+    console.log(error);
+    throw error;
+  }
+
+  if (targetDB === DB_EXPLICIT_ENCRYPT) {
+    return DB_EXPLICIT_URI;
+  }
+
   if (useAtlas === true) {
     if ("" === atlasConnUri) {
       console.log("!! ATLAS_CONN_URI is missing");
       console.log("!! Either set ATLAS_CONN_URI or set USE_ATLAS to false");
       throw "ATLAS_CONN_URI is missing";
     }
-    connuri = ATLAS_CONN_URI;
+    return atlasConnUri;
   }
-  return connuri;
+
+  return DB_AUTO_URI;
 }
 
-async function encClientAuto() {
-  const encClient = new MongoClient(encClientConnUri(), {
-    autoEncryption: {
-      keyVaultClient: kvClient,
-      keyVaultNamespace: KeyVaultNameSpace,
-      kmsProviders: kmsProviders,
-      extraOptions: extraOptions,
-      encryptedFieldsMap: encryptedFieldsMap,
-    },
+export async function initMdbClients(targetDB, enableAutoEncryption) {
+  const autoEncryption = {
+    keyVaultClient: kvClient,
+    keyVaultNamespace: KeyVaultNameSpace,
+    kmsProviders: kmsProviders,
+    extraOptions: extraOptions,
+    encryptedFieldsMap: encryptedFieldsMap,
+    bypassAutoEncryption: !enableAutoEncryption,
+  };
+
+  const encClient = new MongoClient(encClientConnUri(targetDB), {
+    autoEncryption: autoEncryption,
   });
-
   await encClient.connect();
-  return encClient;
-}
-export const encryptClientAuto = await encClientAuto();
-export const encryptCollAuto = encryptClientAuto.db(EncDB).collection(EncColl);
 
-/* MongoClient for plain quereis */
-async function newPlainClient() {
-  const plainClient = new MongoClient(encClientConnUri());
+  const plainClient = new MongoClient(encClientConnUri(targetDB));
   await plainClient.connect();
-  return plainClient;
+
+  return [encClient, plainClient];
 }
-export const plainClient = await newPlainClient();
-export const plainColl = plainClient.db(EncDB).collection(EncColl);
