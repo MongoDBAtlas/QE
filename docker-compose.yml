@@ -43,11 +43,6 @@ services:
       - TZ=${TIMEZONE}
       - DEBIAN_FRONTEND=noninteractive apt-get install keyboard-configuration
     privileged: true
-    entrypoint: bash -c "\
-      echo -e "never" > /sys/kernel/mm/transparent_hugepage/enabled && \
-      echo -e "never" > /sys/kernel/mm/transparent_hugepage/defrag && \
-      ulimit -n 64000 && \
-      mongod -f mongodb.conf && sleep infinity"
 
   local:
     depends_on:
@@ -70,11 +65,6 @@ services:
       - TZ=${TIMEZONE}
       - DEBIAN_FRONTEND=noninteractive apt-get install keyboard-configuration
     privileged: true
-    entrypoint: bash -c "\
-      echo -e "never" > /sys/kernel/mm/transparent_hugepage/enabled && \
-      echo -e "never" > /sys/kernel/mm/transparent_hugepage/defrag && \
-      ulimit -n 64000 && \
-      mongod -f mongodb.conf && sleep infinity"
 
 networks:
   qedemo:

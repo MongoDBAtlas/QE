@@ -43,7 +43,8 @@ const extraOptions = {
 };
 
 function encClientConnUri() {
-  let connuri = "mongodb://enterprise.demo";
+  let connuri =
+    "mongodb://enterprise:27017,enterprise:27018,enterprise:27019/rsfle";
   if (useAtlas === true) {
     if ("" === atlasConnUri) {
       console.log("!! ATLAS_CONN_URI is missing");

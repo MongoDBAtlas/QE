@@ -19,7 +19,7 @@ const res = await encryptCollAuto.insertOne({
 console.log(">>\ninsertOne");
 console.log("  res:", res);
 
-console.log(">>> read from DB");
+console.log(">>> plain READ from DB");
 console.log(await plainColl.findOne({ _id: res.insertedId }));
 
 process.exit(0);
