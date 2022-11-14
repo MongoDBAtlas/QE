@@ -10,7 +10,7 @@ coll = encClient.db(mcli.EncDB).collection(mcli.EncColl);
 res = await coll.insertOne({
   firstName: "Jon",
   lastName: "Doe",
-  patientId: 87654321,
+  patientId: 12345678,
   address: "157 Electric Ave.",
   patientRecord: {
     ssn: "123-45-6789",
@@ -19,7 +19,7 @@ res = await coll.insertOne({
       number: "4111111111111111",
     },
   },
-  medications: ["Atorvastatin", "Levothyroxine"],
+  medications: ["Hashish", "Cannabis"],
 });
 
 console.log(">>\ninsertOne");

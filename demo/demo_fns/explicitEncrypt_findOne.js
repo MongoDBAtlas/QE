@@ -6,6 +6,7 @@ const [encClient, plainClient] = await mcli.initMdbClients(
   false,
 );
 
+const { dek1, dek2 } = deks;
 let coll, res;
 
 coll = plainClient.db(mcli.EncDB).collection(mcli.EncColl);
@@ -16,13 +17,19 @@ console.log("  res", res);
 coll = encClient.db(mcli.EncDB).collection(mcli.EncColl);
 try {
   console.log("2>>\nfindOne : encrypt client - non-index field, 'medications'");
-  res = await coll.findOne({ medications: ["Atorvastatin", "Levothyroxine"] });
+  const unindexedFieldMedic = await encrypt.encrypt(
+    ["Atorvastatin", "Levothyroxine"],
+    {
+      algorithm: "Unindexed",
+      keyId: dek2._id,
+    },
+  );
+  res = await coll.findOne({ medications: unindexedFieldMedic });
   console.log("  res", res);
 } catch (err) {
   console.error("!!", err.message);
 }
 
-const { dek1 } = deks;
 const indexedFieldPID = await encrypt.encrypt(87653221, {
   algorithm: "Indexed",
   keyId: dek1._id,
