@@ -5,6 +5,9 @@
 ## TOC
 
 - Reference source: [MongoDB Quick Start](https://www.mongodb.com/docs/manual/core/queryable-encryption/quick-start/)
+  - [Zoom-out](https://www.mongodb.com/blog/post/mongodb-releases-queryable-encryption-preview)
+  - [Client vs CMK/KMS vs DEKs/KeyVault](https://www.mongodb.com/docs/manual/core/queryable-encryption/fundamentals/kms-providers/#local-key-provider)
+  - [Required S/W stack](https://www.mongodb.com/docs/manual/core/queryable-encryption/install/): all preloaded inside containers
 - [What's the Big Deal?](#whats-the-big-deal)
 - [Test Setup](#test-setup)
   - [Local setup](#local-setup)
@@ -23,11 +26,11 @@
 
 ## What's the Big Deal?
 
-MongoDB Queryable Encryption(hereinafter QE) is one of application level encryption solutions. However, unlike other PPE solutions based on deterministic encryption, MDB QE applies random encryption to both searchable and non-searchable documents leveraging [STE EMM](https://dl.acm.org/doi/abs/10.1007/978-3-030-77883-5_13).
+MongoDB Queryable Encryption(hereinafter QE) is one of application level encryption solutions. However, unlike other PPE solutions based on **deterministic** encryption, MDB QE applies **fully random** encryption to both searchable and non-searchable documents leveraging [STE EMM](https://dl.acm.org/doi/abs/10.1007/978-3-030-77883-5_13).
 
-Without PPE's vulnerabiity like frequency leakage, MDB QE makes a great fit for cloud adoption by taking security a step further, thus best helps customers with digital modernization.
+Without PPE's vulnerabiity like **frequency leak**, MDB QE makes a great fit for **cloud** adoption by taking security a step further, thus best helps customers with digital modernization.
 
-Currently capable of [equality query](https://www.mongodb.com/docs/manual/core/queryable-encryption/fundamentals/encrypt-and-query/#query-types) as a preview as of MDB v6.0.2, QE will soon add more advanced queries that include
+Currently capable of [equality query](https://www.mongodb.com/docs/manual/core/queryable-encryption/fundamentals/encrypt-and-query/#query-types) as a preview as of MDB v6.0.2, QE will soon add more advanced queries that cannot be supported by PPE.
 
 - range
 - prefix/suffix
