@@ -26,11 +26,11 @@
 
 ## What's the Big Deal?
 
-MongoDB Queryable Encryption(hereinafter QE) is one of application level encryption solutions. However, unlike other PPE solutions based on **deterministic** encryption, MDB QE applies **fully random** encryption to both searchable and non-searchable documents leveraging [STE EMM](https://dl.acm.org/doi/abs/10.1007/978-3-030-77883-5_13).
+MongoDB Queryable Encryption(hereinafter QE) is one of application level encryption solutions. However, unlike other PPE solutions based on **deterministic** encryption, MDB QE applies **fully randomized** encryption to both searchable and non-searchable documents leveraging [STE EMM](https://dl.acm.org/doi/abs/10.1007/978-3-030-77883-5_13).
 
 Without PPE's vulnerabiity like **frequency leak**, MDB QE makes a great fit for **cloud** adoption by taking security a step further, thus best helps customers with digital modernization.
 
-Currently capable of [equality query](https://www.mongodb.com/docs/manual/core/queryable-encryption/fundamentals/encrypt-and-query/#query-types) as a preview as of MDB v6.0.2, QE will soon add more advanced queries that cannot be supported by PPE.
+Currently capable of [equality query](https://www.mongodb.com/docs/manual/core/queryable-encryption/fundamentals/encrypt-and-query/#query-types) as a preview as of MDB v6.0.2, QE will soon add more advanced queries that cannot be supported by PPE(including MongoDB's [Client-Side Field Level Encryption](https://www.mongodb.com/docs/manual/core/csfle/)).
 
 - range
 - prefix/suffix
@@ -54,7 +54,7 @@ A containerized test environment that supports 2 modes.
 
 and comprising 3 containers
 
-- client: a **node** project for running codes
+- client: a **node** project for running tests
 - community: runs MongoDB community edition for both **key vault** and **explicit encryption** tests
 - enterprise: runs MongoDB enterprise edition for **auto encryption** tests
 
@@ -141,8 +141,8 @@ Enterprise/Atlas replica set only.
 
 #### `autoEncrypt_insertOne.js`
 
-- runs `insertOne` through a crypto client
-- cryptlib encrypts fields specified by encryption spec
+- runs `insertOne` through a crypto client  
+  **note**: the app handles plain data but cryptlib encrypts fields specified by encryption spec
 - reads the document and confirms the encrypted fields through a non-crypto client
 
   > Two index collections are generated (`ecoc`, `esc`)
@@ -160,13 +160,13 @@ Enterprise/Atlas replica set only.
   : no document found
 - runs `findOne` on a non-index field through a crypto client  
   : an exception thrown
-- runs `findOne` on an index field througha crypto client  
+- runs `findOne` on an index field through a crypto client  
   : found successfully
 
 #### `autoEncrypt_updateOne.js`
 
 - finds(`findOne`) and updates(`updateOne`) a document
-- a crypt-ignorant client reads and confirms fields are encrypted properly
+- a non-crypto client reads and confirms fields are encrypted properly
 
   > It generates the last, third index collection, `ecc`
 
@@ -180,16 +180,18 @@ Enterprise/Atlas replica set only.
 
 ### Explicit encryption
 
-Because community edition does not support auto encryption (does support auto decryption though), applications must perform explicit encryption in and of themselves when inserting and querying.
+Because community edition does not support auto encryption (does support auto decryption though), applications must perform explicit encryption in and of themselves when **inserting and querying**.
 
 #### `explicitEncrypt_insertOne_noEnc.js`
 
-- runs `insertOne` through an explicit encrypt client
+- runs `insertOne` through an explicit encrypt client  
+  **note**: the app handles plain data and data is stored without encryption
 - a crypt-ignorant client reads and confirms that fields are plain data
 
 #### `explicitEncrypt_insertOne.js`
 
-- application explicity encrypts fields using cryptlib and adds(`insertOne`)
+- application explicity encrypts fields using cryptlib and adds(`insertOne`)  
+  **note**: Imagine how **tedious and risky** it would be for the app to have to encrypt data for itself at every corner of insert ops. It will end up with code bloating and maintenance hell.
 - a non-crypto client reads and confirms that fields are properly encrypted
 
 #### `explicitEncrypt_findOne_noEnc.js`
@@ -211,4 +213,5 @@ Because community edition does not support auto encryption (does support auto de
   > Unlike auto encrypt client, the cryptlib must bypass query analysis for explicit encryption, thus does not throw an exception  
   > Application cannot set queryType for non-index field explicit encryption
 - Application explicitly encrypts and tries on indexed field  
-  : found successfully
+  : found successfully  
+  **note**: the app must encrypt the field to query on.
